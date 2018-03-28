@@ -1,4 +1,3 @@
-#include <stdio.h>
 #include <stdlib.h>
 #include "board.h"
 
@@ -7,6 +6,7 @@ board_t * init_board(char *file_name)
 {
     int ny, nx;
     double h, w, alpha, delta_x, delta_t;
+    char **str_board;
     FILE *file;
     board_t *board = (board_t *) calloc(sizeof(board_t), 1);
 
@@ -27,12 +27,20 @@ board_t * init_board(char *file_name)
     board->w = w;
     board->ny = ny;
     board->nx = nx;
-    board->alpha = alpha;
     board->f0 = alpha * delta_t / (delta_x * delta_x);
+    board->alpha = alpha;
     board->board = (double *) calloc(sizeof(double), h * w);
+    generate_board(board->board, str_board);
 
     printf("%lf %lf %d %d\n", h, w, ny, nx);
     printf("%lf\n", alpha);
     printf("%lf\n", delta_t);
     return board;
 }
+
+void generate_board(board_t *board, char **b)
+{
+
+}
+
+void update_temp(board_t *board) { }
