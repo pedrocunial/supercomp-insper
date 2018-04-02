@@ -18,12 +18,14 @@ typedef struct _board_t {
 } board_t;
 
 double min(double *arr, int len);
+double parallel_avg(double *arr, int len);
+double avg(double *arr, int len);
 
 void generate_board(board_t *board, FILE *file);
 void free_board(board_t *board);
 void print_board(board_t *board);
 int calculate_borders(board_t *board, double *new_board, double *diffs);
-double update_temp(board_t *board, double *new_board, double *diffs);
+double update_temp(board_t *board, double *diffs);
 board_t * init_board(char *file_name);
 
 

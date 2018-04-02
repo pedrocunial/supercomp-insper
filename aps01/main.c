@@ -43,13 +43,12 @@ int main(int argc, char *argv[])
 
   double err = eps + 1;
   double board_size = board->nx * board->ny;
-  double *new_board = (double *) calloc(sizeof(double), (board->nx+2)*(board->ny+2));
   double *diffs = (double *) calloc(sizeof(double), board_size);
   puts("calculating...");
   print_board(board);
   for (size_t i=0; i<max_iter && err > eps; i++) {
-    err = update_temp(board, new_board, diffs);
-    print_board(board);
+    err = update_temp(board, diffs);
+    /* print_board(board); */
   }
   return 0;
 }

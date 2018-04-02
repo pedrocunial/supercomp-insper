@@ -14,6 +14,11 @@ extern inline double upd_tmp(double *board, int i, int j, int xmax, double f0)
                                           4 * board[itomi(i, j, xmax)]);
 }
 
+extern inline void reinit_diffs(double *diffs, int len)
+{
+  for (int i=0; i<len; i++) diffs[i] = 0;
+}
+
 board_t * init_board(char *file_name)
 {
   int ny, nx;
@@ -115,17 +120,29 @@ double min(double *arr, int len)
   return m;
 }
 
-double update_temp(board_t *board, double *new_board, double *diffs)
+double parallel_avg(double *arr, int len)
+{
+  double sum = 0;
+#pragma omp parallel for reduction(+:sum)
+  for (int i=0; i<len; i++) {
+    sum += arr[i];
+    /* printf("%lf ", arr[i]); */
+  }
+  /* printf("\n%lf\n", sum); */
+  return sum / len;
+}
+
+double update_temp(board_t *board, double *diffs)
 {
   double curr_err;
   int xmax = board->nx + 2;
   int ymax = board->ny + 2;
   int board_size = (xmax - 2) * (ymax - 2);
   double f0 = board->f0;
+  double *new_board = (double *) calloc(xmax*ymax, sizeof(double));
   double *old_board = board->board;
   int idx = calculate_borders(board, new_board, diffs);
-
-#pragma omp prallel for default(none)
+#pragma omp prallel for collapse(2)
   for (int i=2; i<ymax-2; i++) {
     for (int j=2; j<xmax-2; j++) {
       new_board[itomi(i, j, xmax)] = upd_tmp(old_board, i, j, xmax, f0);
@@ -134,8 +151,8 @@ double update_temp(board_t *board, double *new_board, double *diffs)
   }
 
   board->board = new_board;
-  new_board = old_board;
-  curr_err = min(diffs, board_size);
+  free(old_board);
+  curr_err = parallel_avg(diffs, board_size);
   return curr_err;
 }
 
@@ -159,7 +176,7 @@ int calculate_borders(board_t *board, double *new_board, double *diffs)
     new_board[itomi(i, xmax-1, xmax)] = old_board[itomi(i, xmax-1, xmax)];
   }
   // top and bottom
-  for (int i=1; i<xmax-1; i++) {
+  for (int i=2; i<xmax-2; i++) {
     // top
     if (old_board[i] == ISOLATED_TEMP) {
       new_board[itomi(1, i, xmax)] = f0 * (2 * old_board[itomi(2, i, xmax)]
@@ -186,7 +203,7 @@ int calculate_borders(board_t *board, double *new_board, double *diffs)
                         new_board[itomi(ymax-2, i, xmax)]);
   }
   // left and right
-  for (int i=1; i<ymax-1; i++) {
+  for (int i=2; i<ymax-2; i++) {
     // left
     if (old_board[itomi(i, 0, xmax)] == ISOLATED_TEMP) {
       new_board[itomi(i, 1, xmax)] = f0 * (2 * old_board[itomi(i, 2, xmax)]
