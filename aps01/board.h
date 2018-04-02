@@ -9,6 +9,7 @@
 #define itomi(R, C, N)   ((R) * (N) + (C))  // indexes to matrix index
 
 #include <stdio.h>   // FILE struct
+#include <omp.h>
 
 typedef struct _board_t {
     int nx, ny;

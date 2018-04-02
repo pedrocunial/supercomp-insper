@@ -1,3 +1,4 @@
+#include <omp.h>
 #include <stdlib.h>
 #include <string.h>
 #include <float.h>
@@ -124,7 +125,7 @@ double update_temp(board_t *board, double *new_board, double *diffs)
   double *old_board = board->board;
   int idx = calculate_borders(board, new_board, diffs);
 
-#pragma omp prallel for collapse(2) default(none)
+#pragma omp prallel for default(none)
   for (int i=2; i<ymax-2; i++) {
     for (int j=2; j<xmax-2; j++) {
       new_board[itomi(i, j, xmax)] = upd_tmp(old_board, i, j, xmax, f0);
