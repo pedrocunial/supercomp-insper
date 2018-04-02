@@ -6,15 +6,9 @@
 #define DEFAULT_EPS      0.000001
 #define DEFAULT_MAX_ITER 1000000000000
 #define ISOLATED_TEMP    -274
-#define itomi(R, C, N)   (R * N + C)  // indexes to matrix index
-#define upd_tmp(board, i, j, xmax, f0) (board[itomi(i, j, xmax)] + f0 * \
-                                        (board[itomi(i-1, j, xmax)] + \
-                                         board[itomi(i+1, j, xmax)] + \
-                                         board[itomi(i, j-1, xmax)] + \
-                                         board[itomi(i, j+1, xmax)] + \
-                                         4 * board[itomi(i, j, xmax)]))
+#define itomi(R, C, N)   ((R) * (N) + (C))  // indexes to matrix index
 
-#include <stdio.h>
+#include <stdio.h>   // FILE struct
 
 typedef struct _board_t {
     int nx, ny;
@@ -22,11 +16,14 @@ typedef struct _board_t {
     double *board;
 } board_t;
 
+double min(double *arr, int len);
+
 void generate_board(board_t *board, FILE *file);
 void free_board(board_t *board);
 void print_board(board_t *board);
-double calculate_borders(board_t *board, double *new_board);
-double update_temp(board_t *board);
+int calculate_borders(board_t *board, double *new_board, double *diffs);
+double update_temp(board_t *board, double *new_board, double *diffs);
 board_t * init_board(char *file_name);
+
 
 #endif
