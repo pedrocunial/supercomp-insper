@@ -110,13 +110,49 @@ void print_array(double *arr, int len)
   printf("\n");
 }
 
+void save_to_pgm(board_t *board, const char *str)
+{
+  static size_t c = 0;
+  char file_name[BUF];
+  sprintf(file_name, "%s_out%ld.pgm", str, c);
+  c++;
+  int xmax = board->nx + 2;
+  int ymax = board->ny + 2;
+  int len = xmax * ymax;
+  double *b = board->board;
+  double min_val = min(b, len);
+  double max_val = max(b, len);
+  int max_repr = (int) (max_val - min_val);
+  if (max_repr <= 0) return;
+
+  FILE *file = fopen(file_name, "w");
+  fprintf(file, "P5\n");
+  fprintf(file, "%d %d\n", xmax, ymax);
+  fprintf(file, "%d", max_repr);
+
+  for (int i=0; i<len; i++) {
+    if (i % xmax == 0) fprintf(file, "\n");
+    fprintf(file, "%d ", (b[i] == ISOLATED_TEMP) ? (int) 0 : (int) (b[i] - min_val));
+  }
+
+  fclose(file);
+}
+
+double max(double *arr, int len)
+{
+  double m = DBL_MIN;
+  for (int i=0; i<len; i++) {
+    if (arr[i] > m && arr[i] > ISOLATED_TEMP) m = arr[i];
+  }
+  return m;
+}
+
 double min(double *arr, int len)
 {
   double m = DBL_MAX;
   for (int i=0; i<len; i++) {
-    if (arr[i] < m && arr[i] > 0) m = arr[i];
+    if (arr[i] < m && arr[i] > ISOLATED_TEMP) m = arr[i];
   }
-  if (m == DBL_MAX) m = 0;
   return m;
 }
 
@@ -126,11 +162,42 @@ double parallel_avg(double *arr, int len)
 #pragma omp parallel for reduction(+:sum)
   for (int i=0; i<len; i++) {
     sum += arr[i];
-    /* printf("%lf ", arr[i]); */
   }
-  /* printf("\n%lf\n", sum); */
   return sum / len;
 }
+
+double avg(double *arr, int len)
+{
+  double sum = 0;
+  for (int i=0; i<len; i++) {
+    sum += arr[i];
+  }
+  return sum / len;
+}
+
+double sequencial_update(board_t *board, double *diffs)
+{
+  double curr_err;
+  int xmax = board->nx + 2;
+  int ymax = board->ny + 2;
+  int board_size = (xmax - 2) * (ymax - 2);
+  double f0 = board->f0;
+  double *new_board = (double *) calloc(xmax*ymax, sizeof(double));
+  double *old_board = board->board;
+  int idx = sequencial_calculate_borders(board, new_board, diffs);
+  for (int i=2; i<ymax-2; i++) {
+    for (int j=2; j<xmax-2; j++) {
+      new_board[itomi(i, j, xmax)] = upd_tmp(old_board, i, j, xmax, f0);
+      diffs[idx++] = fabs(old_board[itomi(i, j, xmax)] - new_board[itomi(i, j, xmax)]);
+    }
+  }
+
+  board->board = new_board;
+  free(old_board);
+  curr_err = avg(diffs, board_size);
+  return curr_err;
+}
+
 
 double update_temp(board_t *board, double *diffs)
 {
@@ -156,7 +223,7 @@ double update_temp(board_t *board, double *diffs)
   return curr_err;
 }
 
-int calculate_borders(board_t *board, double *new_board, double *diffs)
+int sequencial_calculate_borders(board_t *board, double *new_board, double *diffs)
 {
   // never calculate corners
   int idx = 0;   // diffs array index
@@ -202,6 +269,84 @@ int calculate_borders(board_t *board, double *new_board, double *diffs)
     diffs[idx++] = fabs(old_board[itomi(ymax-2, i, xmax)] -
                         new_board[itomi(ymax-2, i, xmax)]);
   }
+  // left and right
+  for (int i=2; i<ymax-2; i++) {
+    // left
+    if (old_board[itomi(i, 0, xmax)] == ISOLATED_TEMP) {
+      new_board[itomi(i, 1, xmax)] = f0 * (2 * old_board[itomi(i, 2, xmax)]
+                                           + old_board[itomi(i+1, 1, xmax)]
+                                           + old_board[itomi(i-1, 1, xmax)]
+                                           - 4 * old_board[itomi(i, 1, xmax)])
+                                        + old_board[itomi(i, 1, xmax)];
+    } else {
+      new_board[itomi(i, 1, xmax)] = upd_tmp(old_board, i, 1, xmax, f0);
+    }
+    diffs[idx++] = fabs(old_board[itomi(i, 1, xmax)] - new_board[itomi(i, 1, xmax)]);
+
+    // right
+    if (old_board[itomi(i, xmax-1, xmax)] == ISOLATED_TEMP) {
+      new_board[itomi(i, xmax-2, xmax)] = f0 * (2 * old_board[itomi(i, xmax-3, xmax)]
+                                           + old_board[itomi(i+1, xmax-2, xmax)]
+                                           + old_board[itomi(i-1, xmax-2, xmax)]
+                                           - 4 * old_board[itomi(i, xmax-2, xmax)])
+                                        + old_board[itomi(i, xmax-2, xmax)];
+    } else {
+      new_board[itomi(i, xmax-2, xmax)] = upd_tmp(old_board, i, xmax-2, xmax, f0);
+    }
+    diffs[idx++] = fabs(old_board[itomi(i, xmax-2, xmax)] -
+                        new_board[itomi(i, xmax-2, xmax)]);
+  }
+  return idx;
+}
+
+int calculate_borders(board_t *board, double *new_board, double *diffs)
+{
+  // never calculate corners
+  int idx = 0;   // diffs array index
+  int xmax = board->nx + 2;
+  int ymax = board->ny + 2;
+  double *old_board = board->board;
+  double f0 = board->f0;
+  // keep outside values (expanded loops for cache optimization)
+  for (int i=0; i<xmax; i++) {
+    new_board[i] = old_board[i];
+  }
+  for (int i=0; i<xmax; i++) {
+    new_board[itomi(ymax-1, i, xmax)] = old_board[itomi(ymax-1, i, xmax)];
+  }
+  for (int i=1; i<ymax-1; i++) {
+    new_board[itomi(i, 0, xmax)] = old_board[itomi(i, 0, xmax)];
+    new_board[itomi(i, xmax-1, xmax)] = old_board[itomi(i, xmax-1, xmax)];
+  }
+  // top and bottom
+#pragma omp parallel for reduction(+:idx)
+  for (int i=2; i<xmax-2; i++) {
+    // top
+    if (old_board[i] == ISOLATED_TEMP) {
+      new_board[itomi(1, i, xmax)] = f0 * (2 * old_board[itomi(2, i, xmax)]
+                                           + old_board[itomi(1, i+1, xmax)]
+                                           + old_board[itomi(1, i-1, xmax)]
+                                           - 4 * old_board[itomi(1, i, xmax)])
+                                      + old_board[itomi(1, i, xmax)];
+    } else {
+      new_board[itomi(1, i, xmax)] = upd_tmp(old_board, 1, i, xmax, f0);
+    }
+    diffs[idx++] = fabs(old_board[itomi(1, i, xmax)] - new_board[itomi(1, i, xmax)]);
+
+    // bottom
+    if (old_board[itomi(ymax-1, i, xmax)] == ISOLATED_TEMP) {
+      new_board[itomi(ymax-2, i, xmax)] = f0 * (2 * old_board[itomi(ymax-3, i, xmax)]
+                                                + old_board[itomi(ymax-2, i+1, xmax)]
+                                                + old_board[itomi(ymax-2, i-1, xmax)]
+                                                - 4 * old_board[itomi(ymax-2, i, xmax)])
+                                          + old_board[itomi(ymax-2, i, xmax)];
+    } else {
+      new_board[itomi(ymax-2, i, xmax)] = upd_tmp(old_board, ymax-2, i, xmax, f0);
+    }
+    diffs[idx++] = fabs(old_board[itomi(ymax-2, i, xmax)] -
+                        new_board[itomi(ymax-2, i, xmax)]);
+  }
+#pragma omp parallel for reduction(+:idx)
   // left and right
   for (int i=2; i<ymax-2; i++) {
     // left
