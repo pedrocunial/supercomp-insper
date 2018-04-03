@@ -123,16 +123,17 @@ void save_to_pgm(board_t *board, const char *str)
   double min_val = min(b, len);
   double max_val = max(b, len);
   int max_repr = (int) (max_val - min_val);
+  double multiplier = MAX_PGM / max_repr;
   if (max_repr <= 0) return;
 
   FILE *file = fopen(file_name, "w");
-  fprintf(file, "P5\n");
+  fprintf(file, "P2\n");
   fprintf(file, "%d %d\n", xmax, ymax);
-  fprintf(file, "%d", max_repr);
+  fprintf(file, "%d", MAX_PGM);
 
   for (int i=0; i<len; i++) {
     if (i % xmax == 0) fprintf(file, "\n");
-    fprintf(file, "%d ", (b[i] == ISOLATED_TEMP) ? (int) 0 : (int) (b[i] - min_val));
+    fprintf(file, "%d ", (b[i] == ISOLATED_TEMP) ? 0 : (int) ((b[i]-min_val)*multiplier));
   }
 
   fclose(file);

@@ -2,6 +2,7 @@
 #define __BOARD_H__
 
 #define BUF              256
+#define MAX_PGM          255
 #define DEFAULT_DT       1.0
 #define DEFAULT_EPS      0.000001
 #define DEFAULT_VIZ_ITER 1000
