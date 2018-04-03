@@ -33,7 +33,6 @@ int run(char *fname, double eps, size_t max_iter, size_t viz_iter)
     if (j == viz_iter) {
       // THIS IS REALLY SLOW, I HAVE NO IDEA HOW
       // ELSE I SHOULD DO IT
-      print_board(board);
       save_to_pgm(board, PAR);
       j = 0;
     }
@@ -55,7 +54,6 @@ int run(char *fname, double eps, size_t max_iter, size_t viz_iter)
     if (j == viz_iter) {
       // THIS IS REALLY SLOW, I HAVE NO IDEA HOW
       // ELSE I SHOULD DO IT
-      print_board(board);
       save_to_pgm(board, SEQ);
       j = 0;
     }
