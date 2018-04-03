@@ -1,6 +1,6 @@
 CC = gcc
 MATH = -lm
-CFLAGS = -Wall -O2
+CFLAGS = -Wall
 OPENMP = -fopenmp
 
 all: main.o parallel_board

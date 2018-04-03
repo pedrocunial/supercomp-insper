@@ -1,6 +1,6 @@
 aws/
 supercomp/
 *.o
-aps/*.gif
-aps/*.pgm
-aps/board
+aps01/*.gif
+aps01/*.pgm
+aps01/board

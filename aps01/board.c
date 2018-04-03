@@ -210,7 +210,7 @@ double update_temp(board_t *board, double *diffs)
   double *new_board = (double *) calloc(xmax*ymax, sizeof(double));
   double *old_board = board->board;
   int idx = calculate_borders(board, new_board, diffs);
-#pragma omp prallel for collapse(2)
+#pragma omp prallel for collapse(2) reduction(+:idx)
   for (int i=2; i<ymax-2; i++) {
     for (int j=2; j<xmax-2; j++) {
       new_board[itomi(i, j, xmax)] = upd_tmp(old_board, i, j, xmax, f0);
