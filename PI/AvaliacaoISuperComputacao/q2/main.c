@@ -5,23 +5,28 @@
 
 void read_input_data(double **_mtr, int *rows, int *cols) {
   // funções nao paralelizaveis (necessita leitura sequencial)
+  puts("read input data");
   int r, c;
   double *mtr;
   scanf("%d %d", &r, &c);
   mtr = malloc(sizeof(double) * r * c);
+  puts("after malloc");
   for (int i = 0, k = 0; i < r; i++) {
     for (int j = 0; j < c; j++, k++) {
       scanf("%lf", &mtr[k]);
     }
   }
+  puts("after loop");
   *rows = r;
   *cols = c;
   *_mtr = mtr;
+  puts("end of read_input_data");
 }
 
 double *read_responses(int cols) {
   // funções nao paralelizaveis (necessita leitura sequencial)
   double *y;
+  puts("read responses");
   y = malloc(sizeof(double) * cols);
   for (int i = 0; i < cols; i++) {
     scanf("%lf", &y[i]);
@@ -30,9 +35,10 @@ double *read_responses(int cols) {
 }
 
 int main(int argc, char **argv) {
+  puts("hello world");
   int rows, cols, epochs;
   double *X, *XT, *y, learning_rate;
-  double *w, last_cost;
+  double *w;
   read_input_data(&X, &rows, &cols);
   XT = transpose(X, rows, cols);
   y = read_responses(rows);

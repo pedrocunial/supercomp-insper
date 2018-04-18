@@ -1,18 +1,23 @@
 #include <stdlib.h>
+#include <stdio.h>
+
 
 double *transpose(double *__X, int rows, int cols) {
   double (*T)[rows] = malloc(sizeof(double) * rows * cols);
   double (*X)[cols] = (double(*)[cols]) __X;
 
+  puts("before transpose");
+
   // caso bem simples de paralelizacao, apresentando ganhos já mesmo em casos com outras
   // paralelizacoes (ganhando cerca de 10% de desempenho no q3 com epochs=2000 e já com
   // o #compute_XTX paralelizado)
-#pragma omp parallel for collapse(2)
+#pragma omp parallel for collapse(2) shared(T, X, rows, cols)
   for (int i = 0; i < rows; i++) {
     for (int j = 0; j < cols; j++) {
       T[j][i] = X[i][j];
     }
   }
+  puts("after transpose");
   return (double *) T;
 }
 
