@@ -1,7 +1,7 @@
 #include <iostream>
 #include <string>
-#include "/home/gil/hat-trie/tsl/htrie_map.h"
-#include "/home/gil/hat-trie/tsl/htrie_set.h"
+#include "headers/htrie_map.h"
+#include "headers/htrie_set.h"
 
 
 int main() {
