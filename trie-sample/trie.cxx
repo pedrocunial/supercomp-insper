@@ -3,6 +3,8 @@
 #include "headers/htrie_map.h"
 #include "headers/htrie_set.h"
 
+// not working on mac
+
 
 int main() {
   /*
