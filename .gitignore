@@ -4,3 +4,5 @@ supercomp/
 aps01/*.gif
 aps01/*.pgm
 aps01/board
+aps02/*.o
+aps02/data/*
