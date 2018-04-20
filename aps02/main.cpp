@@ -1,8 +1,13 @@
 #include <iostream>
-#include "pugixml/pugixml.hpp"
+#include "tokenizer.hpp"
 
-int main(void)
+int main(int argc, char **argv)
 {
-  std::cout << "Hello world" << std::endl;
+  std::unique_ptr<Tokenizer> tokenizer;
+  if (argc < 1) {
+    std::cout << "[ERR] No input file" << std::endl;
+    return 1;
+  }
+  tokenizer->load_file(argv[1]);
   return 0;
 }
