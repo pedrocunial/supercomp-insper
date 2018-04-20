@@ -1,4 +1,4 @@
-CC=gcc
+CC=gcc-7
 CFLAGS=-Xpreprocessor -fopenmp -lomp --std=c99 -pedantic -Wall
 
 all: main.o lin_regression.o
