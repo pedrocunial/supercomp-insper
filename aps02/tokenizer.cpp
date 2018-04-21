@@ -21,18 +21,16 @@ void Tokenizer::load_file(const char *filename)
   pugi::xml_node root = doc.child(ROOT_KEY);
   pugi::xml_node pages = root.child(PAGE);
   std::stringstream ss;
-  std::string text = this->text;
-  text = "";
 
   for (pugi::xml_node node=pages; node;
        node=node.next_sibling(PAGE)) {
     // joins all contents into one big string
-    text += node.child_value(TITLE);
+    ss << node.child_value(TITLE) << " ";
   }
 
   puts("donezo");
-  // std::string tmp = ss.str();
+  std::string tmp = ss.str();
   // std::cout << tmp << std::endl;
-  // this->text = tmp.c_str();
+  this->text = tmp;
   puts("hihihihi");
 }
