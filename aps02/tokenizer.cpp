@@ -5,7 +5,9 @@
 #include "tokenizer.hpp"
 #include "pugixml/pugixml.hpp"
 
-Tokenizer::Tokenizer(void) {
+Tokenizer::Tokenizer(std::size_t n) {
+  this->text = "";
+  this->n = n;
 }
 
 Tokenizer::~Tokenizer(void) { }
@@ -18,19 +20,18 @@ void Tokenizer::load_file(const char *filename)
   loaded = doc.load_file(filename);
   if (!loaded) throw "Invalid file value";
 
-  pugi::xml_node root = doc.child(ROOT_KEY);
-  pugi::xml_node pages = root.child(PAGE);
+  pugi::xml_node pages = doc.child(ROOT_KEY).child(PAGE);
   std::stringstream ss;
 
-  for (pugi::xml_node node=pages; node;
-       node=node.next_sibling(PAGE)) {
+  for (pugi::xml_node node=pages; node != NULL; node=node.next_sibling(PAGE)) {
     // joins all contents into one big string
-    ss << node.child_value(TITLE) << " ";
+    // TODO: Clean string contents (keep only alpha numerical + ponctuation
+    // values)
+    ss << node.child(REVISION).child_value(TEXT) << " ";
   }
+  this->text = ss.str();
+}
 
-  puts("donezo");
-  std::string tmp = ss.str();
-  // std::cout << tmp << std::endl;
-  this->text = tmp;
-  puts("hihihihi");
+void Tokenizer::generate_tokens(void)
+{
 }
