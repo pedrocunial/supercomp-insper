@@ -21,11 +21,26 @@ Parser::~Parser(void)
   delete this->tokenizer;
 }
 
+void Parser::add_to_map(std::string key)
+{
+  // TODO: This should be in the wordtrie (using increment to parent)
+}
+
 void Parser::run(void)
 {
   std::size_t depth = this->depth;
   puts("before tokens");
   std::vector<std::string> tokens = this->tokens;
   puts("after tokens");
-  std::size_t len_tokens = tokens.size();
+  std::size_t limit = tokens.size() - depth;
+
+  for (auto i=0; i<limit; i++) {
+    std::string curr_root = tokens[i];
+    this->add_to_map(curr_root);
+
+    auto inner_limit = i + depth;
+    for (auto j=i+1; j<inner_limit; j++) {
+      // push children to parent
+    }
+  }
 }

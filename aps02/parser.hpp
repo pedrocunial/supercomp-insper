@@ -22,6 +22,8 @@ private:
   Tokenizer *tokenizer;
   std::size_t depth;
   std::vector<std::string> tokens;
+
+  void add_to_map(std::string key);
 };
 
 #endif
