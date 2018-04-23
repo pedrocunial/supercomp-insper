@@ -21,9 +21,16 @@ Parser::~Parser(void)
   delete this->tokenizer;
 }
 
-void Parser::add_to_map(std::string key)
+WordTrie *Parser::get_trie(std::string key)
 {
   // TODO: This should be in the wordtrie (using increment to parent)
+  //       but I'm unsure about it soo I'm keeping it here :^)
+  if (this->map.count(key)) {  // map contains key
+    // TODO: Add get trie
+  } else {
+    
+  }
+  return NULL;
 }
 
 void Parser::run(void)
