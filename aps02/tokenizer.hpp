@@ -2,6 +2,7 @@
 #define __TOKENIZER_HPP__
 
 #include <string>
+#include <vector>
 #include "pugixml/pugixml.hpp"
 
 #define REVISION "revision"
@@ -15,13 +16,13 @@ class Tokenizer
 public:
   std::string text;
 
-  void generate_tokens(void);
+  std::vector<std::string> get_tokens(void);
   void load_file(const char *filename);
-  Tokenizer(std::size_t n);
+  Tokenizer(void);
   ~Tokenizer(void);
 
 private:
-  std::size_t n;
+  std::vector<std::string> tokens;
 };
 
 #endif

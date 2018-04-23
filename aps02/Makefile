@@ -1,8 +1,9 @@
 CC=g++
-CFLAGS=-Wall
+CFLAGS=-Wall -std=c++11
+SHELL=/bin/sh
 
-all: pugixml.o main.o tokenizer.o
-	$(CC) $(CFLAGS) -o aps02 pugixml.o main.o tokenizer.o
+all: pugixml.o main.o tokenizer.o wordtrie.o
+	$(CC) $(CFLAGS) -o aps02 pugixml.o main.o tokenizer.o wordtrie.o
 
 pugixml.o: pugixml/pugiconfig.hpp pugixml/pugixml.cpp pugixml/pugixml.hpp
 	$(CC) $(CFLAGS) -c pugixml/pugixml.cpp
@@ -12,3 +13,9 @@ main.o: main.cpp pugixml/pugixml.hpp
 
 tokenizer.o: tokenizer.cpp tokenizer.hpp pugixml/pugixml.hpp
 	$(CC) $(CFLAGS) -c tokenizer.cpp
+
+wordtrie.o: wordtrie/wordtrie.hpp wordtrie/wordtrie.cpp
+	$(CC) $(CFLAGS) -c wordtrie/wordtrie.cpp
+
+clean:
+	rm -rf *.o aps02
