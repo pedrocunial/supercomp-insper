@@ -21,3 +21,11 @@ Parser::~Parser(void)
   delete this->tokenizer;
 }
 
+void Parser::run(void)
+{
+  std::size_t depth = this->depth;
+  puts("before tokens");
+  std::vector<std::string> tokens = this->tokens;
+  puts("after tokens");
+  std::size_t len_tokens = tokens.size();
+}
