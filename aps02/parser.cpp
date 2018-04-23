@@ -1,5 +1,4 @@
 #include "parser.hpp"
-#include "wordtrie/wordtrie.hpp"
 
 Parser::Parser(const char *filename, std::size_t depth)
 {
