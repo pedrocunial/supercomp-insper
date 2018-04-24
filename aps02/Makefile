@@ -14,6 +14,9 @@ main.o: main.cpp pugixml/pugixml.hpp
 tokenizer.o: tokenizer.cpp tokenizer.hpp pugixml/pugixml.hpp
 	$(CC) $(CFLAGS) -c tokenizer.cpp
 
+debug/parser.o: parser.cpp tokenizer.hpp parser.hpp wordtrie/wordtrie.hpp
+	$(CC) $(CFLAGS) -dDEBUG -c parser.cpp
+
 parser.o: parser.cpp tokenizer.hpp parser.hpp wordtrie/wordtrie.hpp
 	$(CC) $(CFLAGS) -c parser.cpp
 

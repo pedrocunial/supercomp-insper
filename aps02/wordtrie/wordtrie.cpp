@@ -1,5 +1,7 @@
 #include "wordtrie.hpp"
 
+#include <iostream>
+
 Node::Node(std::string &word, std::size_t count)
 {
   this->word = word;
@@ -35,6 +37,8 @@ void Node::add_child(std::string &word, std::size_t count)
 
 Node * Node::get_child(std::string &word)
 {
+  if (!this->children.count(word))
+    std::cout << this->word << " has no child" << word << std::endl;
   return this->children[word];
 }
 
@@ -61,5 +65,22 @@ void WordTrie::add_word(std::vector<std::string> words)
     node->add_child(word, 1);
     node = node->get_child(word);
   }
+}
+
+Node *WordTrie::get_node(std::vector<std::string> &words, std::size_t depth)
+{
+  // recieves a vector of words WITHOUT THE ROOT and the max depth to be
+  // searched
+  // if (words.size() > depth)
+  //   throw "Unexpected vector size -- words vector > max depth";
+
+  if (depth == 1) return this->root;
+
+  Node *node = this->root;
+  for (std::string word : words) {
+    node = node->get_child(word);
+    puts("ohaio");
+  }
+  return node;
 }
 

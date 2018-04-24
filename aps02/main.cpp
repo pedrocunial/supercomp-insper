@@ -11,6 +11,11 @@ int main(int argc, char **argv)
   Parser *parser = new Parser(argv[1], 3);
   parser->run();
 
+  puts("Generating text...");
+  std::string text = parser->generate_text(22);
+  puts("Generated text:");
+  std::cout << text << std::endl;
+
   delete parser;
   return 0;
 }
