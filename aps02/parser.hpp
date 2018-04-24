@@ -13,14 +13,13 @@ class Parser
 public:
   std::map<std::string, WordTrie*> map;
 
+  void run(void);
   Parser(const char *filename, std::size_t depth);
   ~Parser(void);
 
-  void run(void);
-
 private:
-  Tokenizer *tokenizer;
   std::size_t depth;
+  Tokenizer *tokenizer;
   std::vector<std::string> tokens;
 
   WordTrie *get_trie(std::string key);

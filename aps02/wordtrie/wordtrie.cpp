@@ -13,6 +13,17 @@ Node::~Node(void)
     delete it->second;
 }
 
+void Node::increment(void)
+{
+  this->count++;
+}
+
+void Node::decrement(void)
+{
+  // unsure if I'll use this
+  this->count--;
+}
+
 void Node::add_child(std::string &word, std::size_t count)
 {
   if (this->children.count(word)) {  // check if map has key
@@ -29,7 +40,7 @@ Node * Node::get_child(std::string &word)
 
 WordTrie::WordTrie(std::string &word, std::size_t depth)
 {
-  this->root = new Node(word, 0);
+  this->root = new Node(word, 1);
   this->depth = depth;
 }
 

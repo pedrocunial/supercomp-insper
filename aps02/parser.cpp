@@ -25,12 +25,15 @@ WordTrie *Parser::get_trie(std::string key)
 {
   // TODO: This should be in the wordtrie (using increment to parent)
   //       but I'm unsure about it soo I'm keeping it here :^)
+  WordTrie *trie = NULL;
   if (this->map.count(key)) {  // map contains key
-    // TODO: Add get trie
+    trie = this->map[key];
+    trie->root->increment();
   } else {
-    
+    trie = new WordTrie(key, this->depth);
+    this->map[key] = trie;
   }
-  return NULL;
+  return trie;
 }
 
 void Parser::run(void)
@@ -43,11 +46,10 @@ void Parser::run(void)
 
   for (auto i=0; i<limit; i++) {
     std::string curr_root = tokens[i];
-    this->add_to_map(curr_root);
 
-    auto inner_limit = i + depth;
-    for (auto j=i+1; j<inner_limit; j++) {
-      // push children to parent
-    }
+    auto begin = tokens.begin() + i;
+    auto end   = tokens.begin() + i + depth;
+    std::vector<std::string> tmp_vec(begin, end);
+    this->get_trie(curr_root)->add_word(tmp_vec);
   }
 }

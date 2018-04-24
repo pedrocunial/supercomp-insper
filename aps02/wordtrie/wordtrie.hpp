@@ -12,8 +12,10 @@ public:
   std::size_t count;
   std::map<std::string, Node*> children;
 
-  Node *get_child(std::string &word);
+  void increment(void);
+  void decrement(void);
   void add_child(std::string &word, std::size_t count);
+  Node *get_child(std::string &word);
   Node(std::string &word, std::size_t count);
   ~Node(void);
 };
