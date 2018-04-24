@@ -1,5 +1,3 @@
-#include <iostream>
-
 #include "parser.hpp"
 
 Parser::Parser(const char *filename, std::size_t depth)
@@ -47,11 +45,12 @@ void Parser::run(void)
 
   for (auto i=0; i<limit; i++) {
     std::string curr_root = tokens[i];
-    std::cout << curr_root << std::endl;
 
-    auto begin = tokens.begin() + i;
+    auto begin = tokens.begin() + i + 1;
     auto end   = tokens.begin() + i + depth;
     std::vector<std::string> tmp_vec(begin, end);
-    this->get_trie(curr_root)->add_word(tmp_vec);
+
+    WordTrie *trie = this->get_trie(curr_root);
+    trie->add_word(tmp_vec);
   }
 }

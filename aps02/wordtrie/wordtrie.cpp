@@ -51,8 +51,9 @@ WordTrie::~WordTrie(void) {
 void WordTrie::add_word(std::vector<std::string> words)
 {
   // recieves a vector of words WITHOUT THE ROOT
-  if (words.size() != this->depth - 1)
+  if (words.size() != this->depth - 1) {
     throw "Unexpected vector size (different from trie depth)";
+  }
 
   Node *node = this->root;
   node->count++;
