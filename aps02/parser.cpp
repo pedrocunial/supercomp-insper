@@ -1,3 +1,5 @@
+#include <iostream>
+
 #include "parser.hpp"
 
 Parser::Parser(const char *filename, std::size_t depth)
@@ -38,14 +40,14 @@ WordTrie *Parser::get_trie(std::string key)
 
 void Parser::run(void)
 {
+  // extracting to local variables (faster access (?))
   std::size_t depth = this->depth;
-  puts("before tokens");
   std::vector<std::string> tokens = this->tokens;
-  puts("after tokens");
   std::size_t limit = tokens.size() - depth;
 
   for (auto i=0; i<limit; i++) {
     std::string curr_root = tokens[i];
+    std::cout << curr_root << std::endl;
 
     auto begin = tokens.begin() + i;
     auto end   = tokens.begin() + i + depth;
