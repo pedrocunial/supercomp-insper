@@ -9,7 +9,8 @@
 
 inline bool is_punct(char c)
 {
-  return c == '.' || c == ',' || c == '/' || c == '@' || c == ';';
+  return c == '.' || c == ',' || c == '/' || c == '@' || c == ';'
+    || c == '?' || c == '!';
 }
 
 Tokenizer::Tokenizer(void) {
