@@ -1,5 +1,4 @@
 #include <sstream>
-#include <locale>
 
 #ifdef DEBUG
 #include <iostream>
@@ -7,6 +6,11 @@
 
 #include "tokenizer.hpp"
 #include "pugixml/pugixml.hpp"
+
+inline bool is_punct(char c)
+{
+  return c == '.' || c == ',' || c == '/' || c == '@' || c == ';';
+}
 
 Tokenizer::Tokenizer(void) {
   this->text = "";
@@ -43,6 +47,10 @@ const char *Tokenizer::clean_str(const char *str)
   for (auto i=0; i<length; i++) {
     if (std::isalnum(str[i]) || std::isspace(str[i]))
       ss << str[i];
+    else if (is_punct(str[i]))
+      ss << ' ' << str[i] << ' ';
+    else
+      ss << ' ';
   }
   return ss.str().c_str();
 }

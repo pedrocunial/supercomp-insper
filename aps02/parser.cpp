@@ -7,6 +7,7 @@
 
 inline void print_text(std::vector<std::string> &text)
 {
+  std::cout << "TEXT:";
   for (auto word : text) {
     std::cout << " " << word;
   }
@@ -44,7 +45,6 @@ WordTrie *Parser::get_trie(std::string &key)
   WordTrie *trie = NULL;
   if (this->map.count(key)) {  // map contains key
     trie = this->map[key];
-    trie->root->increment();
   } else {
     trie = new WordTrie(key, this->depth);
     this->map[key] = trie;
@@ -91,6 +91,9 @@ std::string Parser::get_randomic_word(std::vector<std::string> &key,
 {
   // Parses to the "depth"th node, and threats it as the leaf
   // uses a discrete distribution to do the "weighted" part of it
+#ifdef DEBUG
+  std::cout << "ROOT_KEY:" << key[0] << std::endl;
+#endif
   WordTrie *trie = this->map[key[0]];
 
 #ifdef DEBUG
@@ -110,6 +113,7 @@ std::string Parser::get_randomic_word(std::vector<std::string> &key,
     node = trie->get_node(tmp_vec, depth);
 #ifdef DEBUG
     puts("got node!");
+    std::cout << node->word << std::endl;
 #endif
   }
 
@@ -118,13 +122,21 @@ std::string Parser::get_randomic_word(std::vector<std::string> &key,
   std::vector<std::size_t> counts;
 #ifdef DEBUG
   puts("before generating counts and keys");
+  std::cout << (node->children.empty() ? "empty map" : "map is not empty!")
+            << std::endl;
 #endif
   for (auto const &it : node->children) {
+#ifdef DEBUG
+    puts("iteration loop");
+    std::cout << "it.first = " << it.first << std::endl;
+#endif
     keys.push_back(it.first);
     counts.push_back(it.second->count);
   }
 
 #ifdef DEBUG
+  std::cout << keys.size() << counts.size() << std::endl;
+  print_text(keys);
   puts("before generating distribution");
 #endif
   std::discrete_distribution<std::size_t> distribution(counts.begin(),
@@ -155,6 +167,10 @@ std::string Parser::generate_text(const std::size_t length)
   puts("pushing first value");
 #endif
   text.push_back(this->get_randomic_first_word());
+#ifdef DEBUG
+  puts("first word:");
+  print_text(text);
+#endif
 
   // 2)
 #ifdef DEBUG
@@ -162,8 +178,10 @@ std::string Parser::generate_text(const std::size_t length)
 #endif
   for (std::size_t i=1; i<depth; i++) {
     std::string word = this->get_randomic_word(text, i);
+#ifdef DEBUG
     std::cout << word;
     print_text(text);
+#endif
     text.push_back(word);
 #ifdef DEBUG
     puts("pushed!");
@@ -179,6 +197,9 @@ std::string Parser::generate_text(const std::size_t length)
     auto end   = tokens.begin() + i + depth;
     std::vector<std::string> tmp_vec(begin, end);
     text.push_back(this->get_randomic_word(tmp_vec, depth));
+#ifdef DEBUG
+    print_text(text);
+#endif
   }
 
   // join words into string

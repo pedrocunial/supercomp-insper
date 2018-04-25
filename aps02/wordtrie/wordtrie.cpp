@@ -64,30 +64,35 @@ void WordTrie::add_word(std::vector<std::string> words)
   }
 
   Node *node = this->root;
-  node->count++;
-  for (std::string word : words) {
-    node->add_child(word, 1);
+  size_t i = 1, size = words.size();
+  do {
+    node->add_child(words[i], 1);
     node->increment();
-    node = node->get_child(word);
-  }
+    node = node->get_child(words[i]);
+    i++;
+  } while (i < size);
 }
 
 Node *WordTrie::get_node(std::vector<std::string> &words, std::size_t depth)
 {
   // recieves a vector of words WITHOUT THE ROOT and the max depth to be
   // searched
-  // if (words.size() > depth)
-  //   throw "Unexpected vector size -- words vector > max depth";
-
+#ifdef DEBUG
+  std::cout << "depth: " << depth << std::endl;
+#endif
   if (depth == 1) return this->root;
 
   Node *node = this->root;
-  for (std::string word : words) {
-    node = node->get_child(word);
+  for (auto i=1; i<words.size(); i++) {
+    node = node->get_child(words[i]);
 #ifdef DEBUG
-    puts("ohaio");
+    puts("#get_node iteration");
 #endif
   }
+#ifdef DEBUG
+  std::cout << "node is null? " << (node == nullptr) << std::endl;
+  std::cout << "node value: " << node->word << std::endl;
+#endif
   return node;
 }
 

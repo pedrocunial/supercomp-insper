@@ -3,6 +3,7 @@
 
 #include <string>
 #include <vector>
+#include <locale>
 #include "pugixml/pugixml.hpp"
 
 #define REVISION "revision"
@@ -10,6 +11,8 @@
 #define TITLE    "title"
 #define TEXT     "text"
 #define PAGE     "page"
+
+inline bool is_punct(char c);
 
 class Tokenizer
 {
