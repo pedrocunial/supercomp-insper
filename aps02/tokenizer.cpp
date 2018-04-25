@@ -1,5 +1,9 @@
-#include <iostream>
 #include <sstream>
+#include <locale>
+
+#ifdef DEBUG
+#include <iostream>
+#endif
 
 #include "tokenizer.hpp"
 #include "pugixml/pugixml.hpp"
@@ -27,9 +31,20 @@ void Tokenizer::load_file(const char *filename)
     // joins all contents into one big string
     // TODO: Clean string contents (keep only alpha numerical + ponctuation
     // values)
-    ss << node.child(REVISION).child_value(TEXT) << " ";
+    ss << this->clean_str(node.child(REVISION).child_value(TEXT)) << " ";
   }
   this->text = ss.str();
+}
+
+const char *Tokenizer::clean_str(const char *str)
+{
+  std::stringstream ss;
+  auto length = std::char_traits<char>::length(str);
+  for (auto i=0; i<length; i++) {
+    if (std::isalnum(str[i]) || std::isspace(str[i]))
+      ss << str[i];
+  }
+  return ss.str().c_str();
 }
 
 std::vector<std::string> Tokenizer::get_tokens(void)
@@ -41,5 +56,8 @@ std::vector<std::string> Tokenizer::get_tokens(void)
   copy(std::istream_iterator<std::string>(iss),
        std::istream_iterator<std::string>(),
        back_inserter(this->tokens));
+#ifdef DEBUG
+  std::cout << this->tokens.size() << std::endl;
+#endif
   return this->tokens;
 }

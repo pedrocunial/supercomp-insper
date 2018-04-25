@@ -1,6 +1,8 @@
 #include "wordtrie.hpp"
 
+#ifdef DEBUG
 #include <iostream>
+#endif
 
 Node::Node(std::string &word, std::size_t count)
 {
@@ -37,8 +39,10 @@ void Node::add_child(std::string &word, std::size_t count)
 
 Node * Node::get_child(std::string &word)
 {
+#ifdef DEBUG
   if (!this->children.count(word))
     std::cout << this->word << " has no child" << word << std::endl;
+#endif
   return this->children[word];
 }
 
@@ -63,6 +67,7 @@ void WordTrie::add_word(std::vector<std::string> words)
   node->count++;
   for (std::string word : words) {
     node->add_child(word, 1);
+    node->increment();
     node = node->get_child(word);
   }
 }
@@ -79,7 +84,9 @@ Node *WordTrie::get_node(std::vector<std::string> &words, std::size_t depth)
   Node *node = this->root;
   for (std::string word : words) {
     node = node->get_child(word);
+#ifdef DEBUG
     puts("ohaio");
+#endif
   }
   return node;
 }

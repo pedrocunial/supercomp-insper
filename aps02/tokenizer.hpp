@@ -23,6 +23,8 @@ public:
 
 private:
   std::vector<std::string> tokens;
+
+  const char *clean_str(const char *str);
 };
 
 #endif
