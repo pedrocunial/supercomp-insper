@@ -2,9 +2,13 @@
 #include <cstdlib>
 #include <sstream>
 #include <iostream>
+#include <boost/mpi.hpp>
 
 #include "parser.hpp"
 
+#define MASTER 0
+
+#ifdef DEBUG
 inline void print_text(std::vector<std::string> &text)
 {
   std::cout << "TEXT:";
@@ -13,10 +17,20 @@ inline void print_text(std::vector<std::string> &text)
   }
   std::cout << std::endl;
 }
+#endif
 
 Parser::Parser(const char *filename, std::size_t depth)
 {
+  boost::mpi::communicator world;
+
   this->tokenizer = new Tokenizer();
+
+  this->rank = world.rank();
+  this->size = world.size();
+
+  #ifdef DEBUG
+  std::cout << "rank/size: " << this->rank << "/" << this->size << std::endl;
+  #endif
 
   puts("Loading file...");
   this->tokenizer->load_file(filename);
@@ -59,7 +73,7 @@ void Parser::run(void)
   std::vector<std::string> tokens = this->tokens;
   std::size_t limit = tokens.size() - depth;
 
-  for (auto i=0; i<limit; i++) {
+  for (std::size_t i=0; i<limit; i++) {
     std::string curr_root = tokens[i];
 
     auto begin = tokens.begin() + i + 1;
@@ -166,7 +180,11 @@ std::string Parser::generate_text(const std::size_t length)
 #ifdef DEBUG
   puts("pushing first value");
 #endif
-  text.push_back(this->get_randomic_first_word());
+  auto word = this->get_randomic_first_word();
+  if (rank == MASTER) {
+
+  }
+  text.push_back();
 #ifdef DEBUG
   puts("first word:");
   print_text(text);

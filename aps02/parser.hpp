@@ -12,6 +12,7 @@
 class Parser
 {
 public:
+  std::size_t rank, size;
   std::map<std::string, WordTrie*> map;
   std::default_random_engine generator;
 
