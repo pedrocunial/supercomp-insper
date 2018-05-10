@@ -20,13 +20,13 @@ debug/main.o: main.cpp pugixml/pugixml.hpp
 	$(CC) $(CFLAGS) $(MPIFLAGS) $(DEBUGFLAG) -c main.cpp
 
 default/tokenizer.o: tokenizer.cpp tokenizer.hpp pugixml/pugixml.hpp
-	$(CC) $(CFLAGS) $(MPIFLAGS) -c tokenizer.cpp
+	$(CC) $(CFLAGS) -c tokenizer.cpp
 
 debug/parser.o: parser.cpp tokenizer.hpp parser.hpp wordtrie/wordtrie.hpp
 	$(CC) $(CFLAGS) $(DEBUGFLAG) $(MPIFLAGS) -c parser.cpp
 
 debug/tokenizer.o: tokenizer.cpp tokenizer.hpp pugixml/pugixml.hpp
-	$(CC) $(CFLAGS) $(DEBUGFLAG) $(MPIFLAGS) -c tokenizer.cpp
+	$(CC) $(CFLAGS) $(DEBUGFLAG) -c tokenizer.cpp
 
 default/parser.o: parser.cpp tokenizer.hpp parser.hpp wordtrie/wordtrie.hpp
 	$(CC) $(CFLAGS) $(MPIFLAGS) -c parser.cpp

@@ -3,10 +3,13 @@
 #include <sstream>
 #include <iostream>
 #include <boost/mpi.hpp>
+#include <boost/serialization/string.hpp>
 
 #include "parser.hpp"
 
 #define MASTER 0
+
+namespace mpi = boost::mpi;
 
 #ifdef DEBUG
 inline void print_text(std::vector<std::string> &text)
@@ -21,12 +24,10 @@ inline void print_text(std::vector<std::string> &text)
 
 Parser::Parser(const char *filename, std::size_t depth)
 {
-  boost::mpi::communicator world;
-
   this->tokenizer = new Tokenizer();
 
-  this->rank = world.rank();
-  this->size = world.size();
+  this->rank = this->world.rank();
+  this->size = this->world.size();
 
   #ifdef DEBUG
   std::cout << "rank/size: " << this->rank << "/" << this->size << std::endl;
@@ -92,9 +93,9 @@ std::string Parser::get_randomic_first_word(void)
   // random value"
 #ifdef DEBUG
   puts("generating first word!");
-  for (auto token : this->tokens) {
-    std::cout << token << std::endl;
-  }
+  // for (auto token : this->tokens) {
+  //   std::cout << token << std::endl;
+  // }
 #endif
   const std::size_t rand_max = this->tokens.size() - this->depth;
   return this->tokens[std::rand() % rand_max];
@@ -153,8 +154,8 @@ std::string Parser::get_randomic_word(std::vector<std::string> &key,
   print_text(keys);
   puts("before generating distribution");
 #endif
-  std::discrete_distribution<std::size_t> distribution(counts.begin(),
-                                                       counts.end());
+  std::discrete_distribution<int> distribution(counts.begin(),
+                                               counts.end());
 
   auto idx = distribution(this->generator);
 #ifdef DEBUG
@@ -166,6 +167,52 @@ std::string Parser::get_randomic_word(std::vector<std::string> &key,
 #endif
   return res;
 }
+
+void Parser::send_word(const std::string &word, const double proba)
+{
+  mpi::request reqs[2];
+  reqs[0] = this->world.isend(MASTER, SELECTED_WORD_TAG, std::string(word));
+  reqs[1] = this->world.isend(MASTER, SELECTED_PERCENT_TAG, proba);
+#ifdef DEBUG
+  std::cout << "#send_word -- sending " << word << std::endl;
+#endif
+  mpi::wait_all(reqs, reqs + 2);
+#ifdef DEBUG
+  std::cout << "#send_word -- sent!! " << word << std::endl;
+#endif
+}
+
+std::string Parser::select_word(const std::vector<std::string> &words,
+                                const std::vector<double> &percents)
+{
+  std::discrete_distribution<int> distribution(percents.begin(),
+                                               percents.end());
+  return words[distribution(this->generator)];
+}
+
+std::string Parser::gather_words(const std::string &word, const double percent)
+{
+  std::size_t size = this->size - 1;
+  mpi::request reqs[2 * size];
+  std::vector<std::string> words(size + 1);
+  std::vector<double> percents(size + 1);
+
+  words[0] = word;
+  percents[0] = percent;
+  for (std::size_t i=0; i<size; i++) {
+    reqs[i] = this->world.irecv(i+1, SELECTED_WORD_TAG, words[i]);
+    reqs[i + size] = this->world.irecv(i+1, SELECTED_PERCENT_TAG, percents[i]);
+  }
+#ifdef DEBUG
+  puts("#gather_words -- Before wait_all");
+#endif
+  mpi::wait_all(reqs, reqs + 2 * size);
+#ifdef DEBUG
+  puts("#gather_words -- after wait_all!!");
+#endif
+  return this->select_word(words, percents);
+}
+
 
 std::string Parser::generate_text(const std::size_t length)
 {
@@ -181,10 +228,14 @@ std::string Parser::generate_text(const std::size_t length)
   puts("pushing first value");
 #endif
   auto word = this->get_randomic_first_word();
+  std::string final_word;
   if (rank == MASTER) {
-
+    final_word = this->gather_words(word, (double) 1.0);
+  } else {
+    this->send_word(word, (double) 1.0);
   }
-  text.push_back();
+  broadcast(this->world, final_word, MASTER);
+  text.push_back(final_word);
 #ifdef DEBUG
   puts("first word:");
   print_text(text);
