@@ -28,6 +28,14 @@ public:
   ~Parser(void);
 
 private:
+  struct word_return_t
+  {
+    double proba;
+    std::string word;
+
+    word_return_t(double p, std::string w): proba(p), word(w) {}
+  };
+
   std::size_t depth;
   Tokenizer *tokenizer;
   std::vector<std::string> tokens;
@@ -36,8 +44,8 @@ private:
   std::string gather_words(const std::string &word, const double percent);
   std::string select_word(const std::vector<std::string> &words,
                           const std::vector<double> &percent);
-  std::string get_randomic_word(std::vector<std::string> &key,
-                                std::size_t depth);
+  word_return_t * get_randomic_word(std::vector<std::string> &key,
+                                    std::size_t depth);
   std::string get_randomic_first_word(void);
   WordTrie *get_trie(std::string &key);
 };

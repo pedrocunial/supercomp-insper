@@ -101,8 +101,8 @@ std::string Parser::get_randomic_first_word(void)
   return this->tokens[std::rand() % rand_max];
 }
 
-std::string Parser::get_randomic_word(std::vector<std::string> &key,
-                                      std::size_t depth)
+Parser::word_return_t * Parser::get_randomic_word(std::vector<std::string> &key,
+                                          std::size_t depth)
 {
   // Parses to the "depth"th node, and threats it as the leaf
   // uses a discrete distribution to do the "weighted" part of it
@@ -135,6 +135,7 @@ std::string Parser::get_randomic_word(std::vector<std::string> &key,
   // words + counts found in node children
   std::vector<std::string> keys;
   std::vector<std::size_t> counts;
+  std::size_t total = 0;
 #ifdef DEBUG
   puts("before generating counts and keys");
   std::cout << (node->children.empty() ? "empty map" : "map is not empty!")
@@ -147,6 +148,7 @@ std::string Parser::get_randomic_word(std::vector<std::string> &key,
 #endif
     keys.push_back(it.first);
     counts.push_back(it.second->count);
+    total += it.second->count;
   }
 
 #ifdef DEBUG
@@ -165,7 +167,7 @@ std::string Parser::get_randomic_word(std::vector<std::string> &key,
 #ifdef DEBUG
   std::cout << res << std::endl;
 #endif
-  return res;
+  return new word_return_t(((double) counts[idx]) / ((double) total), res);
 }
 
 void Parser::send_word(const std::string &word, const double proba)
@@ -246,12 +248,18 @@ std::string Parser::generate_text(const std::size_t length)
   puts("pushing second wave");
 #endif
   for (std::size_t i=1; i<depth; i++) {
-    std::string word = this->get_randomic_word(text, i);
+    std::string final_word;
+    word_return_t *value = this->get_randomic_word(text, i);
+    if (rank == MASTER)
+      final_word = this->gather_words(value->word, value->proba);
+    else
+      this->send_word(value->word, value->proba);
+    broadcast(this->world, final_word, MASTER);
+    delete value;
 #ifdef DEBUG
     std::cout << word;
-    print_text(text);
 #endif
-    text.push_back(word);
+    text.push_back(final_word);
 #ifdef DEBUG
     puts("pushed!");
 #endif
@@ -265,7 +273,15 @@ std::string Parser::generate_text(const std::size_t length)
     auto begin = tokens.begin() + i;
     auto end   = tokens.begin() + i + depth;
     std::vector<std::string> tmp_vec(begin, end);
-    text.push_back(this->get_randomic_word(tmp_vec, depth));
+    std::string final_word;
+    word_return_t *value = this->get_randomic_word(tmp_vec, depth);
+    if (rank == MASTER)
+      final_word = this->gather_words(value->word, value->proba);
+    else
+      this->send_word(value->word, value->proba);
+    broadcast(this->world, final_word, MASTER);
+    delete value;
+    text.push_back(final_word);
 #ifdef DEBUG
     print_text(text);
 #endif

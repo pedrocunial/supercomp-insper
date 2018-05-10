@@ -46,9 +46,10 @@ int main(int argc, char **argv)
 
   puts("Generating text...");
   std::string text = parser->generate_text(std::strtoul(argv[argc-1], nullptr, 0));
-  puts("DONE!\nGenerated text:");
-  if (rank == MASTER)
+  if (rank == MASTER) {
+    puts("DONE!\nGenerated text:");
     std::cout << text << std::endl;
+  }
 
   delete parser;
   return 0;
