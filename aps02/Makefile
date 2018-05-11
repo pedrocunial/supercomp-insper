@@ -1,7 +1,7 @@
 CC=mpic++
 CFLAGS=-Wall -std=c++11
 MPIFLAGS=-I/usr/local/include/ -L/usr/local/lib -lboost_mpi -lboost_serialization
-DEBUGFLAG=-DDEBUG
+DEBUGFLAG=-DDEBUG -g
 SHELL=/bin/sh
 
 all: pugixml.o main.o default/tokenizer.o default/wordtrie.o default/parser.o

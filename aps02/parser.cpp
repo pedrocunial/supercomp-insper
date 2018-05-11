@@ -102,7 +102,7 @@ std::string Parser::get_randomic_first_word(void)
 }
 
 Parser::word_return_t * Parser::get_randomic_word(std::vector<std::string> &key,
-                                          std::size_t depth)
+                                                  std::size_t depth)
 {
   // Parses to the "depth"th node, and threats it as the leaf
   // uses a discrete distribution to do the "weighted" part of it
@@ -113,7 +113,10 @@ Parser::word_return_t * Parser::get_randomic_word(std::vector<std::string> &key,
 
 #ifdef DEBUG
   puts("got trie");
+  std::cout << ((trie == nullptr) ? "trie is null" : "trie is safe") << " node #"
+            << this->rank << std::endl;
 #endif
+  if (trie == nullptr) return new word_return_t((double) 0.0, "");
 
   Node *node  = NULL;
   if (depth == 1) {
@@ -131,6 +134,8 @@ Parser::word_return_t * Parser::get_randomic_word(std::vector<std::string> &key,
     std::cout << node->word << std::endl;
 #endif
   }
+  if (node == nullptr)
+    return new word_return_t((double) 0.0, "");
 
   // words + counts found in node children
   std::vector<std::string> keys;
@@ -143,8 +148,8 @@ Parser::word_return_t * Parser::get_randomic_word(std::vector<std::string> &key,
 #endif
   for (auto const &it : node->children) {
 #ifdef DEBUG
-    puts("iteration loop");
-    std::cout << "it.first = " << it.first << std::endl;
+    // puts("iteration loop");
+    // std::cout << "it.first = " << it.first << std::endl;
 #endif
     keys.push_back(it.first);
     counts.push_back(it.second->count);
@@ -154,14 +159,15 @@ Parser::word_return_t * Parser::get_randomic_word(std::vector<std::string> &key,
 #ifdef DEBUG
   std::cout << keys.size() << counts.size() << std::endl;
   print_text(keys);
-  puts("before generating distribution");
+  std::cout << "before generating distribution on node #"
+            << this->rank << std::endl;
 #endif
   std::discrete_distribution<int> distribution(counts.begin(),
                                                counts.end());
 
   auto idx = distribution(this->generator);
 #ifdef DEBUG
-  std::cout << idx << " " << keys.size() << std::endl;
+  std::cout << "dist idx and size " << idx << "/" << keys.size() << std::endl;
 #endif
   auto res = keys[idx];
 #ifdef DEBUG
@@ -195,10 +201,13 @@ std::string Parser::select_word(const std::vector<std::string> &words,
 std::string Parser::gather_words(const std::string &word, const double percent)
 {
   std::size_t size = this->size - 1;
-  mpi::request reqs[2 * size];
+  std::vector<mpi::request> reqs(2 * size);
   std::vector<std::string> words(size + 1);
   std::vector<double> percents(size + 1);
 
+#ifdef DEBUG
+  puts("starting gather words");
+#endif
   words[0] = word;
   percents[0] = percent;
   for (std::size_t i=0; i<size; i++) {
@@ -208,7 +217,7 @@ std::string Parser::gather_words(const std::string &word, const double percent)
 #ifdef DEBUG
   puts("#gather_words -- Before wait_all");
 #endif
-  mpi::wait_all(reqs, reqs + 2 * size);
+  mpi::wait_all(reqs.begin(), reqs.end());
 #ifdef DEBUG
   puts("#gather_words -- after wait_all!!");
 #endif
@@ -236,6 +245,10 @@ std::string Parser::generate_text(const std::size_t length)
   } else {
     this->send_word(word, (double) 1.0);
   }
+#ifdef DEBUG
+  std::cout << "after send/gather (2nd step) words on node #"
+            << this->rank << std::endl;
+#endif
   broadcast(this->world, final_word, MASTER);
   text.push_back(final_word);
 #ifdef DEBUG
@@ -249,11 +262,18 @@ std::string Parser::generate_text(const std::size_t length)
 #endif
   for (std::size_t i=1; i<depth; i++) {
     std::string final_word;
+#ifdef DEBUG
+    std::cout << "before getting random word in node #" << this->rank << std::endl;
+#endif
     word_return_t *value = this->get_randomic_word(text, i);
     if (rank == MASTER)
       final_word = this->gather_words(value->word, value->proba);
     else
       this->send_word(value->word, value->proba);
+#ifdef DEBUG
+    std::cout << "after send/gather (3rd step) words on node #"
+              << this->rank << std::endl;
+#endif
     broadcast(this->world, final_word, MASTER);
     delete value;
 #ifdef DEBUG
@@ -267,7 +287,7 @@ std::string Parser::generate_text(const std::size_t length)
 
   // 3)
 #ifdef DEBUG
-  puts("before limitless!!");
+  std::cout << "before limitless!! NODE #" << this->rank << std::endl;
 #endif
   for (auto i=depth; i<length; i++) {
     auto begin = tokens.begin() + i;

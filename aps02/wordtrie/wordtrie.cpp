@@ -39,10 +39,12 @@ void Node::add_child(std::string &word, std::size_t count)
 
 Node * Node::get_child(std::string &word)
 {
+  if (!this->children.count(word)) {
 #ifdef DEBUG
-  if (!this->children.count(word))
     std::cout << this->word << " has no child" << word << std::endl;
 #endif
+    return nullptr;
+  }
   return this->children[word];
 }
 
@@ -85,6 +87,7 @@ Node *WordTrie::get_node(std::vector<std::string> &words, std::size_t depth)
   Node *node = this->root;
   for (auto i=1; i<words.size(); i++) {
     node = node->get_child(words[i]);
+    if (node == nullptr) return node;
 #ifdef DEBUG
     puts("#get_node iteration");
 #endif

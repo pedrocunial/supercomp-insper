@@ -2,6 +2,11 @@
 #include <cstdlib>
 #include <boost/mpi.hpp>
 
+#ifdef DEBUG
+#include <chrono>
+#include <thread>
+#endif
+
 #include "parser.hpp"
 
 #define MASTER 0
@@ -27,8 +32,8 @@ int main(int argc, char **argv)
     std::cout << "[ERR] Too many arguments " << argc << std::endl;
     return 1;
   }
-
 #ifdef DEBUG
+  std::this_thread::sleep_for(std::chrono::milliseconds(25000));  // for gdb
   if (rank == MASTER) {
     puts("I'm the master");
     for (auto i=1; i<=size; i++) {
